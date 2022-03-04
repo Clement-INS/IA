@@ -47,7 +47,79 @@ Predicat principal de l'algorithme :
 
 %*******************************************************************************
 
-main :-
+% main :-
+% 	% initialisations S0, F0, H0, G0
+% 
+% 	initial_state(S0),
+% 	G0 is 0,
+% 	heuristique2(S0,H0),
+% 	F0 is G0 + H0,
+% 
+% 	% initialisations Pf, Pu et Q 
+% 
+% 	empty(Q),
+% 	empty(Pu0),
+% 	empty(Pf0),
+% 	insert([[F0,H0,G0],S0], Pf0, Pf),
+% 	insert([S0, [F0,H0,G0], nil, nil], Pu0, Pu),
+	
+% 
+% 	% lancement de Aetoile
+% 
+% 	% aetoile(Pf,Pu,Q).
+
+%*******************************************************************************
+% 
+ aetoile(nil, nil, _) :- write(" PAS de SOLUTION : L’ETAT FINAL N’EST PAS ATTEIGNABLE !").
+% 
+% aetoile(Pf,Pu,Q) :- 
+% 	final_state(F),
+% 	suppress_min(F,Pf,_),
+% 	affiche_solution().
+% 	
+% aetoile(Pf, Pu, Qs) :-
+% 	suppress_min([[F,H,G],U],Pf,Pfa),
+% 	suppress([U,[F,H,G],Pere, A],Pu,Pua),
+% 	expand(U,Action,[F1,H1,G1], Apres, G),
+%
+
+expand(U, G0, L) :-
+	findall([Apres,[F,H,G], U, A],
+	(rule(A,Count,U,Apres),
+	heuristique2(Apres,H),
+	G is G0 + Count,
+	F is G + H), L).
+
+
+loop_successors([], Pu, Pf, _, _, Pu, Pf) :-
+	put_flat(Pu),
+	write("!!!!!\n").
+
+% loop_successors(S | Ss, Pu, Pf, Q, F0, Pu2, Pf2) :-
+% 	belongs(S,Q),
+% 	loop_successors(Ss, Pu, Pf, Q, F0, Pu3, Pf3).
+% 
+% loop_successors([U,[F,H,G],Pere, A] | Ss , Pu, Pf, Q, F0, Pu2, Pf2) :-
+% 	belongs([U,[_,_,_],_, _],Pu),
+% 	(F < F0 ->
+% 		suppress([U,[_,_,_],_,_],Pu,Pu1),
+% 		suppress([[_,_,_],U],Pf,Pf1),
+% 		insert([U,[F,H,G],Pere, A], Pu1, Pu2),
+% 		insert([[F,H,G], U], Pf1, Pf2)
+% 	),
+% 	loop_successors(Ss, Pu2, Pf2, Q, F0, Pu3, Pf3).
+
+loop_successors([[U,[F,H,G],Pere, A] | Ss], Pu, Pf, Q, F0, Pu3, Pf3) :-
+	insert([U,[F,H,G],Pere, A], Pu, Pu2),
+	insert([[F,H,G], U], Pf, Pf2),
+	loop_successors(Ss, Pu2, Pf2, Q, F0, Pu3, Pf3).
+
+
+
+
+affiche_solution() :- write("Solution existante").
+
+test_loop_successors() :-
 	% initialisations S0, F0, H0, G0
 
 	initial_state(S0),
@@ -63,16 +135,11 @@ main :-
 	insert([[F0,H0,G0],S0], Pf0, Pf),
 	insert([S0, [F0,H0,G0], nil, nil], Pu0, Pu),
 
-	% lancement de Aetoile
-
-	aetoile(Pf,Pu,Q).
-
-
-%*******************************************************************************
-
-aetoile([], [], _) :- write(" PAS de SOLUTION : L’ETAT FINAL N’EST PAS ATTEIGNABLE !").
-%aetoile(Pf, Pu, Qs) :-
+	expand(S0,G0,L),
+	% write(L),
+	loop_successors(L, Pu, Pf, Q, F0, Pu1, Pf1),
+	put_flat(Pu1).
+	% % write("\n\n"),
+	% put_flat(Pu2).
+	% put_flat(Pf2).
 	
-
-	
-   
