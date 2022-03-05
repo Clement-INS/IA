@@ -46,42 +46,45 @@ Predicat principal de l'algorithme :
 :- ['taquin.pl'].    % predicats definissant le systeme a etudier
 
 %*******************************************************************************
-
-% main :-
-% 	% initialisations S0, F0, H0, G0
-% 
-% 	initial_state(S0),
-% 	G0 is 0,
-% 	heuristique2(S0,H0),
-% 	F0 is G0 + H0,
-% 
-% 	% initialisations Pf, Pu et Q 
-% 
-% 	empty(Q),
-% 	empty(Pu0),
-% 	empty(Pf0),
-% 	insert([[F0,H0,G0],S0], Pf0, Pf),
-% 	insert([S0, [F0,H0,G0], nil, nil], Pu0, Pu),
-	
-% 
-% 	% lancement de Aetoile
-% 
-% 	% aetoile(Pf,Pu,Q).
+main :-
+ 	% initialisations S0, F0, H0, G0
+ 
+ 	initial_state(S0),
+ 	G0 is 0,
+ 	heuristique2(S0,H0),
+ 	F0 is G0 + H0,
+ 
+ 	% initialisations Pf, Pu et Q 
+ 
+ 	empty(Q),
+ 	empty(Pu0),
+ 	empty(Pf0),
+ 	insert([[F0,H0,G0],S0], Pf0, Pf),
+ 	insert([S0, [F0,H0,G0], nil, nil], Pu0, Pu),	
+ 
+ 	% lancement de Aetoile
+ 
+ 	aetoile(Pf,Pu,Q).
 
 %*******************************************************************************
-% 
- aetoile(nil, nil, _) :- write(" PAS de SOLUTION : L’ETAT FINAL N’EST PAS ATTEIGNABLE !").
-% 
-% aetoile(Pf,Pu,Q) :- 
-% 	final_state(F),
-% 	suppress_min(F,Pf,_),
-% 	affiche_solution().
-% 	
-% aetoile(Pf, Pu, Qs) :-
-% 	suppress_min([[F,H,G],U],Pf,Pfa),
-% 	suppress([U,[F,H,G],Pere, A],Pu,Pua),
-% 	expand(U,Action,[F1,H1,G1], Apres, G),
 %
+
+aetoile(nil, nil, _) :- write(" PAS de SOLUTION : L’ETAT FINAL N’EST PAS ATTEIGNABLE !").
+ 
+aetoile(Pf, _, Q) :- 
+ 	final_state(Final),
+ 	suppress_min([_,Final],Pf,_),
+	%put_flat(Q),
+ 	affiche_solution().
+ 	
+aetoile(Pf, Pu, Q) :-
+	suppress_min([[F,H,G],U], Pf, Pfa),
+	suppress([U,_, Pere, A], Pu, Pua),
+	expand(U, G, L),
+	loop_successors(L, Pua, Pfa, Q, Pu1, Pf1),
+	insert([U,[F,H,G],Pere, A], Q, Q1),
+	aetoile(Pf1, Pu1, Q1).
+
 
 expand(U, G0, L) :-
 	findall([Apres,[F,H,G], U, A],
@@ -134,7 +137,7 @@ test_loop_successors() :-
 	insert([[F0,H0,G0],S0], Pf0, Pf),
 	insert([S0, [F0,H0,G0], nil, nil], Pu0, Pu),
 
-	expand(S0,G0,L),
+	expand(S0,G0,L).
 
 	% Basic Test
 	% loop_successors(L, Pu, Pf, Q, Pu1, Pf1),
