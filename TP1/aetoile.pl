@@ -91,28 +91,27 @@ expand(U, G0, L) :-
 	F is G + H), L).
 
 
-loop_successors([], Pu, Pf, _, _, Pu, Pf) :-
-	put_flat(Pu),
-	write("!!!!!\n").
+loop_successors([], Pu, Pf, _, Pu, Pf).
 
-% loop_successors(S | Ss, Pu, Pf, Q, F0, Pu2, Pf2) :-
-% 	belongs(S,Q),
-% 	loop_successors(Ss, Pu, Pf, Q, F0, Pu3, Pf3).
-% 
-% loop_successors([U,[F,H,G],Pere, A] | Ss , Pu, Pf, Q, F0, Pu2, Pf2) :-
-% 	belongs([U,[_,_,_],_, _],Pu),
-% 	(F < F0 ->
-% 		suppress([U,[_,_,_],_,_],Pu,Pu1),
-% 		suppress([[_,_,_],U],Pf,Pf1),
-% 		insert([U,[F,H,G],Pere, A], Pu1, Pu2),
-% 		insert([[F,H,G], U], Pf1, Pf2)
-% 	),
-% 	loop_successors(Ss, Pu2, Pf2, Q, F0, Pu3, Pf3).
+loop_successors([S | Ss], Pu, Pf, Q, Pu2, Pf2) :-
+	belongs(S,Q),
+	loop_successors(Ss, Pu, Pf, Q, Pu2, Pf2),
+	!.
 
-loop_successors([[U,[F,H,G],Pere, A] | Ss], Pu, Pf, Q, F0, Pu3, Pf3) :-
+loop_successors([[U,[F,H,G],_, _] | Ss] , Pu, Pf, Q, Pu3, Pf3) :-
+	belongs([U,[F0,H0,G0],_, _],Pu),
+	(F < F0 ->
+		suppress([[F0,H0,G0],U],Pf,Pf1),
+		insert([[F,H,G], U], Pf1, Pf2),
+		loop_successors(Ss, Pu, Pf2, Q, Pu3, Pf3)
+	;	loop_successors(Ss, Pu, Pf, Q, Pu3, Pf3)
+	),
+	!.
+
+loop_successors([[U,[F,H,G],Pere, A] | Ss], Pu, Pf, Q, Pu3, Pf3) :-
 	insert([U,[F,H,G],Pere, A], Pu, Pu2),
 	insert([[F,H,G], U], Pf, Pf2),
-	loop_successors(Ss, Pu2, Pf2, Q, F0, Pu3, Pf3).
+	loop_successors(Ss, Pu2, Pf2, Q, Pu3, Pf3).
 
 
 
@@ -136,10 +135,33 @@ test_loop_successors() :-
 	insert([S0, [F0,H0,G0], nil, nil], Pu0, Pu),
 
 	expand(S0,G0,L),
-	% write(L),
-	loop_successors(L, Pu, Pf, Q, F0, Pu1, Pf1),
-	put_flat(Pu1).
-	% % write("\n\n"),
-	% put_flat(Pu2).
-	% put_flat(Pf2).
+
+	% Basic Test
+	% loop_successors(L, Pu, Pf, Q, Pu1, Pf1),
+	% put_flat(Pu1),
+	% write("\n\n"),
+	% put_flat(Pf1).
+
+	% Test S in Q
+	% insert([[[a,b,c],[g,h,d],[f,vide,e]],[4,3,1],[[a,b,c],[g,h,d],[vide,f,e]],right],Q,Q1),
+	% loop_successors(L, Pu, Pf, Q1, Pu1, Pf1),
+	% put_flat(Pu1),
+	% write("\n\n"),
+	% put_flat(Pf1).
+
+	% Test with S in Pu wiht F0 > F
+	% insert([[[a,b,c],[g,h,d],[f,vide,e]],[5,2,1],[[a,b,c],[g,h,d],[vide,f,e]],left],Pu,Pu2),
+	% insert([[5,2,1],[[a,b,c],[g,h,d],[f,vide,e]]],Pf,Pf2),
+	% loop_successors(L, Pu2, Pf2, Q, Pu1, Pf1),
+	% put_flat(Pu1),
+	% write("\n\n"),
+	% put_flat(Pf1).
+
+	% Test with S in Pu wiht F0 < F
+	% insert([[[a,b,c],[g,h,d],[f,vide,e]],[3,2,1],[[a,b,c],[g,h,d],[vide,f,e]],left],Pu,Pu2),
+	% insert([[5,2,1],[[a,b,c],[g,h,d],[f,vide,e]]],Pf,Pf2),
+	% loop_successors(L, Pu2, Pf2, Q, Pu1, Pf1),
+	% put_flat(Pu1),
+	% write("\n\n"),
+	% put_flat(Pf1).
 	
