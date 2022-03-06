@@ -69,13 +69,19 @@ main :-
 %*******************************************************************************
 %
 
+%*******************
+%	AETOILE Program
+%*******************
+
 aetoile(nil, nil, _) :- write(" PAS de SOLUTION : L’ETAT FINAL N’EST PAS ATTEIGNABLE !").
  
 aetoile(Pf, _, Q) :- 
  	final_state(Final),
  	suppress_min([_,Final],Pf,_),
-	%put_flat(Q),
- 	affiche_solution().
+ 	affiche_solution(Final, Q, L),
+	reverse(L, Solution, []),
+	write(Solution),
+	!.
  	
 aetoile(Pf, Pu, Q) :-
 	suppress_min([[F,H,G],U], Pf, Pfa),
@@ -85,6 +91,9 @@ aetoile(Pf, Pu, Q) :-
 	insert([U,[F,H,G],Pere, A], Q, Q1),
 	aetoile(Pf1, Pu1, Q1).
 
+%**************************************************
+%	EXPAND : find all U's successors and their cost
+%***************************************************
 
 expand(U, G0, L) :-
 	findall([Apres,[F,H,G], U, A],
@@ -93,6 +102,9 @@ expand(U, G0, L) :-
 	G is G0 + Count,
 	F is G + H), L).
 
+%*********************************************************
+%	LOOP_SUCCESSORS : deal with each successor in the avls
+%*********************************************************
 
 loop_successors([], Pu, Pf, _, Pu, Pf).
 
@@ -116,12 +128,31 @@ loop_successors([[U,[F,H,G],Pere, A] | Ss], Pu, Pf, Q, Pu3, Pf3) :-
 	insert([[F,H,G], U], Pf, Pf2),
 	loop_successors(Ss, Pu2, Pf2, Q, Pu3, Pf3).
 
+%*********************************************************************************************
+%	AFFICHE SOLUTION : return the solution with the states and action that have been done in L
+%*********************************************************************************************
+
+affiche_solution(nil, _, []).
+
+affiche_solution(U, Q, [[U,A] | L]) :-
+	belongs([U, _, _, _], Q),
+	suppress([U, _, Pere, A], Q, Q1),
+	affiche_solution(Pere, Q1, L).
+
+%********************************************************************************************
+%	REVERSE: reverse a list, used to get the solution from the list given by affiche_solution
+%********************************************************************************************
+
+reverse([],L,L).
+
+reverse([H|T],L,Acc) :- reverse(T,L,[H|Acc]).
 
 
+%************************************************************
+%	TESTS: test expand and loop_successors on different cases
+%************************************************************
 
-affiche_solution() :- write("Solution existante").
-
-test_loop_successors() :-
+tests() :-
 	% initialisations S0, F0, H0, G0
 
 	initial_state(S0),
