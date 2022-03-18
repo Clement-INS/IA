@@ -22,6 +22,36 @@
 	par un nouvel identificateur).
 	*/
 
+% tests
+
+situation_test1([ [o,x,x],
+            	 [x,o,x],
+                 [o,x,o] ]).
+
+situation_test2([ [o,x,x],
+            	 [x,_,x],
+                 [o,x,o] ]).
+
+situation_test3([ [a,b,c],
+            	 [d,e,f],
+                 [g,h,i] ]).
+
+situation_test4([ [o,x,_],
+            	 [_,_,x],
+                 [o,_,o] ]).
+
+situation_test5([ [o,x,_],
+            	 [_,x,x],
+                 [o,_,o] ]).
+
+situation_test6([ [_,_,_],
+                     [_,_,_],
+                     [_,_,x] ]).
+					 
+situation_test7([ [x,_,_],
+                     [_,_,_],
+                     [_,_,_] ]).
+
 situation_initiale([ [_,_,_],
                      [_,_,_],
                      [_,_,_] ]).
@@ -45,6 +75,8 @@ adversaire(o,x).
 	 ****************************************************/
 
  situation_terminale(_Joueur, Situation) :-   ground(Situation).
+
+ :- situation_test1(E), situation_terminale(_Joueur, E).
 
 	/***************************
 	DEFINITIONS D'UN ALIGNEMENT
@@ -90,7 +122,6 @@ diagonale(D, M) :-
 
 diagonale(D, M) :-
 	seconde_diag(1,D,M).
-
 	
 premiere_diag(_,[],[]).
 premiere_diag(K,[E|D],[Ligne|M]) :-
@@ -103,7 +134,9 @@ seconde_diag(K,[E|D],[Ligne|M]) :-
 	reverse(Ligne,L1),
 	nth1(K,L1,E),
 	K1 is K+1,
-	premiere_diag(K1,D,M).
+	seconde_diag(K1,D,M).
+
+
 
 
 	/*****************************
@@ -114,6 +147,11 @@ seconde_diag(K,[E|D],[Ligne|M]) :-
 possible([X|L], J) :- unifiable(X,J), !, possible(L,J).
 possible(  [],  _).
 
+
+%:- possible([_,_,_], x).
+%:- possible([_,_,x], x).
+%:- possible([o,o,_], o).
+%
 	/* Attention 
 	il faut juste verifier le caractere unifiable
 	de chaque emplacement de la liste, mais il ne
@@ -157,15 +195,19 @@ same([],_).
 same([J | Xs], J) :-
 	same(Xs,J).
 
-alignement_gagnant(Ali, J) :- 
+alignement_gagnant(Etat, J) :- 
+	alignement(Ali,Etat),
 	ground(Ali),
 	same(Ali,J).
 
-alignement_perdant([X | Xs], J) :-
-	adversaire(J, X),
-	ground([X | Xs]),
-	same([X | Xs], X). 
+alignement_perdant(Etat, J) :-
+	alignement(Ali,Etat),
+	adversaire(J, O),
+	ground(Ali),
+	same(Ali, O). 
 
+%:- alignement_gagnant([o,o,o],o).
+%:- alignement_perdant([o,o,o],x).
 
 	/* ****************************
 	DEFINITION D'UN ETAT SUCCESSEUR
@@ -178,9 +220,16 @@ alignement_perdant([X | Xs], J) :-
 	*/	
 
 % A FAIRE
-successeur(J, Etat,[L,C]) :-
+successeur(J,Etat,[L,C]) :-
 	nth1(L,Etat,Lig),
-	nth1(C,Lig,J).
+	nth1(C,Lig,X),
+	var(X),
+	X = J.
+
+:- situation_test4(E), successeur(x,E,[1,3]).
+:- situation_test4(E), successeur(x,E,[2,1]).
+:- situation_test4(E), successeur(x,E,[3,2]).
+
 
 	/**************************************
    	 EVALUATION HEURISTIQUE D'UNE SITUATION
@@ -198,13 +247,13 @@ successeur(J, Etat,[L,C]) :-
 
 heuristique(J,Situation,H) :-		% cas 1
    H = 10000,				% grand nombre approximant +infini
-   alignement(Alig,Situation),
-   alignement_gagnant(Alig,J), !.
-	
+   %alignement(Alig,Situation),
+   alignement_gagnant(Situation,J), !.
+
 heuristique(J,Situation,H) :-		% cas 2
    H = -10000,				% grand nombre approximant -infini
-   alignement(Alig,Situation),
-   alignement_perdant(Alig,J), !.
+   %alignement(Alig,Situation),
+   alignement_perdant(Situation,J), !.
 
 heuristique(J, Situation, H) :-
 	findall(1, (alignement(Ali,Situation), possible(Ali,J)), Res),
@@ -213,38 +262,20 @@ heuristique(J, Situation, H) :-
 	findall(1, (alignement(Ali,Situation), possible(Ali,O)), ResO),
 	length(ResO, H2),
 	H is H1 - H2.
-	
 
-
-
+:- situation_test4(E), heuristique(x,E,-2).
+:- situation_test1(E), heuristique(o,E,10000).
+:- situation_test1(E), heuristique(x,E,-10000).
+:- situation_test5(E), heuristique(x,E,0).
+:- situation_initiale(E), heuristique(x,E,0).
+:- situation_test6(E), heuristique(x,E,3).
+:- situation_test7(E), heuristique(x,E,3).
 
 % on ne vient ici que si les cut precedents n'ont pas fonctionne,
 % c-a-d si Situation n'est ni perdante ni gagnante.
 
 % A FAIRE 					cas 3
 % heuristique(J,Situation,H) :- ? ? ? ?
-
-
-
-
-
-% tests
-
-situation_test1([ [o,x,x],
-            	 [x,o,x],
-                 [o,x,o] ]).
-
-situation_test2([ [o,x,x],
-            	 [x,_,x],
-                 [o,x,o] ]).
-
-situation_test3([ [a,b,c],
-            	 [d,e,f],
-                 [g,h,i] ]).
-
-situation_test4([ [o,x,_],
-            	 [_,_,x],
-                 [o,_,o] ]).
 
 
 /*******************************************************

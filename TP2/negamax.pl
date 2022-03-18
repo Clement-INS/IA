@@ -57,16 +57,32 @@ A FAIRE : ECRIRE ici les clauses de negamax/5
 .....................................
 	*/
 
-	negamax(_, _, Pmax, Pmax, _).
-	negamax(_, Etat, _, _, _) :-
-		ground(Etat).
-	negamax(J, Etat, P, Pmax, [Coup, Val]) :-
-		successeurs(J, Etat, Succ),
-		loop_negamax(J,P,Pmax,Succ, Res),
-		meilleur(Res, [C1, V1]),
-		Coup = C1,
-		Val = -V1.
+negamax(J, Etat, Pmax, Pmax, [_, Val]) :-
+	!,
+	heuristique(J,Etat,Val),
+	write("!!!!!!!!!!!!!!!!!!!!!\n").
+/*negamax(J, Etat, _, _, [[], Val]) :-
+	situation_terminale(J,Etat),
+	heuristique(J,Etat,Val),
+	!.
+negamax(J, Etat, _, _, _) :-
+	heuristique(J,Etat,Val),
+	10000 is abs(Val),
+	!.*/
+negamax(J, Etat, _, _, [_, Val]) :-
+	situation_terminale(J,Etat), !;
+	alignement_gagnant(Etat, J), !;
+	alignement_perdant(Etat, J), !;
+	heuristique(J, Etat, Val).
 
+
+negamax(J, Etat, P, Pmax, [Coup, Val]) :-
+	successeurs(J, Etat, Succ),
+	loop_negamax(J,P,Pmax,Succ, Res),
+	meilleur(Res, [Coup, V1]),
+	Val is -V1.
+
+	%:- joueur_initial(J), situation_initiale(E), negamax(J,E,0,3,[C,V]).
 
 	/*******************************************
 	 DEVELOPPEMENT D'UNE SITUATION NON TERMINALE
@@ -81,9 +97,8 @@ A FAIRE : ECRIRE ici les clauses de negamax/5
 	 */
 
 successeurs(J,Etat,Succ) :-
-	copy_term(Etat, Etat_Suiv),
-	findall([Coup,Etat_Suiv],
-		    successeur(J,Etat_Suiv,Coup),
+	findall([[L,C],Etat],
+		    successeur(J,Etat,[L,C]),
 		    Succ).
 
 	/*************************************
@@ -99,16 +114,18 @@ successeurs(J,Etat,Succ) :-
 
 loop_negamax(_,_, _  ,[],                []).
 loop_negamax(J,P,Pmax,[[Coup,Suiv]|Succ],[[Coup,Vsuiv]|Reste_Couples]) :-
-	loop_negamax(J,P,Pmax,Succ,Reste_Couples), % Cette ligne fait ...
+	loop_negamax(J,P,Pmax,Succ,Reste_Couples),
 	adversaire(J,A),
 	Pnew is P+1,
-	negamax(A,Suiv,Pnew,Pmax, [_,Vsuiv]).
+	write(Suiv),
+	write("\n\n"),
+	negamax(A,Suiv,Pnew,Pmax, [_,Vsuiv]). % Cette ligne permet d'obtenir la valeur du coup suivant
 
 	/*
 
 A FAIRE : commenter chaque litteral de la 2eme clause de loop_negamax/5,
 	en particulier la forme du terme [_,Vsuiv] dans le dernier
-	litteral ?
+	litteral 
 	*/
 
 	/*********************************
@@ -129,18 +146,20 @@ A FAIRE : commenter chaque litteral de la 2eme clause de loop_negamax/5,
 A FAIRE : ECRIRE ici les clauses de meilleur/2
 	*/
 
-	meilleur_coup([],[a,-1000000]).
-	meilleur_coup([[C,V] | Ls], [C1,V1]) :-
-		meilleur_coup(Ls, [C2,V2]),
-		(V > V2 ->
-		 	C1 = C,
-			V1 = V
-		; 	C1 = C2,
-			V1 = V2).
+meilleur_coup([[C,V]], [C, V]) :- !.
+meilleur_coup([[C,V] | Ls], [C1,V1]) :-
+	meilleur_coup(Ls, [C2,V2]),
+	(V < V2 ->
+	 	C1 = C,
+		V1 = V
+	; 	C1 = C2,
+		V1 = V2).
 
+meilleur(Liste_de_Couples, Meilleur_Couple) :-
+	meilleur_coup(Liste_de_Couples,Meilleur_Couple).
 
-	meilleur(Liste_de_Couples, Meilleur_Couple) :-
-		meilleur_coup(Liste_de_Couples,Meilleur_Couple).
+:-  meilleur([[[1,1],2],[[2,3],1],[[3,3],3]], [[2,3],1]).
+:-  meilleur([[[1,1],-2],[[2,3],1],[[3,3],3]], [[1,1],-2]).
 
 	/******************
   	PROGRAMME PRINCIPAL
@@ -149,6 +168,7 @@ A FAIRE : ECRIRE ici les clauses de meilleur/2
 main(B,V, Pmax) :-
 	joueur_initial(J),
 	situation_initiale(M),
+	%situation_test5(M),
 	negamax(J, M, 0, Pmax, [B, V]).        
 
 
