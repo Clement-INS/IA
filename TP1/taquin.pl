@@ -46,22 +46,25 @@ initial_state([ [ a, b, c],
                 [ g, h, d],
                 [vide,f, e] ]). % h2=2, f*=2
 
-/*initial_state([ [b, c, d],
+initial_state1([ [b, c, d],
                 [a,vide,g],
                 [f, h, e]  ]). % h2=10 f*=10
 			
-initial_state([ [f, g, a],
+initial_state2([ [f, g, a],
                 [h,vide,b],
                 [d, c, e]  ]). % h2=16, f*=20
 			
-initial_state([ [e, f, g],
+initial_state3([ [e, f, g],
                 [d,vide,h],
                 [c, b, a]  ]). % h2=24, f*=30 
 
-initial_state([ [a, b, c],
+initial_state4([ [a, b, c],
                 [g,vide,d],
                 [h, f, e]]). % etat non connexe avec l'etat final (PAS DE SOLUTION)
-*/  
+ 
+initial_state5([ [b, h, c],       % C'EST L'EXEMPLE PRIS EN COURS
+                [a, f, d],       % 
+                [g,vide,e] ]).
 
 
    %******************
@@ -171,17 +174,19 @@ delete(N,X,[Y|L], [Y|R]) :-
 	*/
 
 	
-	coordonnees([L,C], Mat, Elt) :- 
-      nth1(L,Mat,Ligne),
-      nth1(C,Ligne,Elt).
+coordonnees([L,C], Mat, Elt) :- 
+   nth1(L,Mat,Ligne),
+   nth1(C,Ligne,Elt).
 						 
+:- coordonnees([2,2], [[a,b,c],[d,e,f]],  e).
+:- coordonnees([2,3], [[a,b,c],[d,e,f]],  f).
    %*************
    % HEURISTIQUES
    %*************
    
 heuristique(U,H) :-
-    heuristique1(U, H).  % au debut on utilise l heuristique 1 
-%   heuristique2(U, H).  % ensuite utilisez plutot l heuristique 2  
+%    heuristique1(U, H).  % au debut on utilise l heuristique 1 
+   heuristique2(U, H).  % ensuite utilisez plutot l heuristique 2  
    
    
    %****************
@@ -202,18 +207,21 @@ heuristique(U,H) :-
 	% et les compte (voir prédicat length)
    
   
-   malplace(P,U,F) :-
-      coordonnees([Lig,Col],U,P),
-      P \= vide,
-      coordonnees([Lig,Col],F,P2),
-      P2 \= P.
+malplace(P,U,F) :-
+   coordonnees([Lig,Col],U,P),
+   P \= vide,
+   coordonnees([Lig,Col],F,P2),
+   P2 \= P.
 
-   heuristique1(U, H) :-
-      final_state(F),
-      findall(P,malplace(P,U,F),Res),
-      length(Res,H).  
+heuristique1(U, H) :-
+   final_state(F),
+   findall(P,malplace(P,U,F),Res),
+   length(Res,H).  
 
-   
+:- initial_state1(S), heuristique1(S,7).
+:- initial_state2(S), heuristique1(S,6).
+:- initial_state3(S), heuristique1(S,8).
+:- initial_state4(S), heuristique1(S,2).
    
    %****************
    %HEURISTIQUE no 2
@@ -222,15 +230,18 @@ heuristique(U,H) :-
    % Somme des distances de Manhattan à parcourir par chaque piece
    % entre sa position courante et sa positon dans l etat final
 
-   dm(P,U,F,V) :-
-      coordonnees([L,C],U,P),
-      coordonnees([L1,C1],F,P),
-      P \= vide,
-      V is (abs(L1-L)+abs(C1-C)).
+dm(P,U,F,V) :-
+   coordonnees([L,C],U,P),
+   coordonnees([L1,C1],F,P),
+   P \= vide,
+   V is (abs(L1-L)+abs(C1-C)).
 
-   heuristique2(U, H) :-
-      final_state(F),
-      findall(V,dm(_,U,F,V),Res),
-      sumlist(Res,H).
+heuristique2(U, H) :-
+   final_state(F),
+   findall(V,dm(_,U,F,V),Res),
+   sumlist(Res,H).
 									
-									
+:- initial_state1(S), heuristique2(S,10).
+:- initial_state2(S), heuristique2(S,16).
+:- initial_state3(S), heuristique2(S,24).
+:- initial_state4(S), heuristique2(S,2).					
