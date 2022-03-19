@@ -32,9 +32,9 @@ situation_test2([ [o,x,x],
             	 [x,_,x],
                  [o,x,o] ]).
 
-situation_test3([ [a,b,c],
-            	 [d,e,f],
-                 [g,h,i] ]).
+situation_test3([ [o,x,_],
+            	 [x,x,x],
+                 [o,_,o] ]).
 
 situation_test4([ [o,x,_],
             	 [_,_,x],
@@ -147,10 +147,6 @@ seconde_diag(K,[E|D],[Ligne|M]) :-
 possible([X|L], J) :- unifiable(X,J), !, possible(L,J).
 possible(  [],  _).
 
-
-%:- possible([_,_,_], x).
-%:- possible([_,_,x], x).
-%:- possible([o,o,_], o).
 %
 	/* Attention 
 	il faut juste verifier le caractere unifiable
@@ -161,6 +157,10 @@ possible(  [],  _).
 % A FAIRE 
 unifiable(X,_) :- var(X).
 unifiable(J,J).
+
+:- possible([_,_,_], x).
+:- possible([_,_,x], x).
+:- possible([o,o,_], o).
 
 
 	
@@ -206,8 +206,8 @@ alignement_perdant(Etat, J) :-
 	ground(Ali),
 	same(Ali, O). 
 
-%:- alignement_gagnant([o,o,o],o).
-%:- alignement_perdant([o,o,o],x).
+:- situation_test3(E), alignement_gagnant(E,x).
+:- situation_test3(E), alignement_perdant(E,o).
 
 	/* ****************************
 	DEFINITION D'UN ETAT SUCCESSEUR

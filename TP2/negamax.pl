@@ -59,21 +59,21 @@ A FAIRE : ECRIRE ici les clauses de negamax/5
 
 negamax(J, Etat, Pmax, Pmax, [_, Val]) :-
 	!,
-	heuristique(J,Etat,Val),
-	write("!!!!!!!!!!!!!!!!!!!!!\n").
-/*negamax(J, Etat, _, _, [[], Val]) :-
+	heuristique(J,Etat,Val).
+	%write("!!!!!!!!!!!!!!!!!!!!!\n").
+negamax(J, Etat, _, _, [_, Val]) :-
 	situation_terminale(J,Etat),
 	heuristique(J,Etat,Val),
 	!.
-negamax(J, Etat, _, _, _) :-
+negamax(J, Etat, _, _, [_,Val]) :-
 	heuristique(J,Etat,Val),
 	10000 is abs(Val),
-	!.*/
-negamax(J, Etat, _, _, [_, Val]) :-
+	!.
+/*negamax(J, Etat, _, _, [_, Val]) :-
 	situation_terminale(J,Etat), !;
 	alignement_gagnant(Etat, J), !;
-	alignement_perdant(Etat, J), !;
-	heuristique(J, Etat, Val).
+	alignement_perdant(Etat, J), !,
+	heuristique(J, Etat, Val).*/
 
 
 negamax(J, Etat, P, Pmax, [Coup, Val]) :-
@@ -117,8 +117,8 @@ loop_negamax(J,P,Pmax,[[Coup,Suiv]|Succ],[[Coup,Vsuiv]|Reste_Couples]) :-
 	loop_negamax(J,P,Pmax,Succ,Reste_Couples),
 	adversaire(J,A),
 	Pnew is P+1,
-	write(Suiv),
-	write("\n\n"),
+	%write(Suiv),
+	%write("\n\n"),
 	negamax(A,Suiv,Pnew,Pmax, [_,Vsuiv]). % Cette ligne permet d'obtenir la valeur du coup suivant
 
 	/*
